@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"  lang="en"
+      xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8" http-equiv="Content-Type" content="text/html;"/>
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{/css/login.css}" />
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+    <link rel="stylesheet" th:href="@{/css/bootstrap-theme.min.css}" />
+    <link rel="stylesheet" th:href="@{/css/home.css}" />
+    <script th:src="@{/js/jquery-3.3.1.min.js}"></script>
+    <script th:src="@{/js/bootstrap.min.js}"></script>
+    <script type="text/javascript" >
+
+
+
+    </script>
+
+</head>
+<body > <!-- th:style="'background:url(' + @{/img/login.jpg} + ');width: 100%;padding-top: 8%;text-align: center;'"-->
+    <div class="row">
+        <div  class="col-md-6 canvas">
+            <canvas id="canvas" width="600" height="400" class="canvas-content">抱歉，您的浏览器不支持canvas元素</canvas>
+            <div class="row">
+                <div class="col-md-8 ">
+                    <input type="text" class="form-control" id="answer">
+                </div>
+                <div class="col-md-4 ">
+                    <button onclick="answer()">确定</button>
+                </div>
+
+            </div>
+        </div>
+        <div class="col-md-6 text">
+            <div class="row">
+            <div class="col-md-12 " id="msgs">
+            </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script  type="text/javascript" th:inline="javascript">
+
+    var canvas = document.getElementById("canvas");
+    var ctx
+    //检测浏览器是否支持canvas 该方法是否存在 取得上下文对象
+    if (canvas.getContext) {
+        ctx = canvas.getContext('2d'); //2d用单引用括起来
+        //画一个黑色矩形
+        ctx.fillStyle="#002200";
+        ctx.fillRect(0,0,600,400);
+        //按下标记
+        var onoff=false;
+        var oldx=-10;
+        var oldy=-10;
+        //设置颜色默认为白色
+        var linecolor="white";
+        //宽度默认为4
+        var linw=4;
+        //鼠标移动事件，事件绑定
+        /*canvas.addEventListener("mousemove",draw,true);
+        canvas.addEventListener("mousedown",down,false);
+        canvas.addEventListener("mouseup",up,false);*/
+    }
+
+
+
+    var key = [[${key}]]; // n
+    var roomNumber = [[${roomNumber}]]; // n
+    var roomPwd = [[${roomPwd}]]; // n
+
+    var msg = "join&&"+key+"|"+roomNumber+"|"+roomPwd;
+
+    var websocket = null;
+    //判断当前浏览器是否支持WebSocket
+    if('WebSocket' in window){
+        websocket = new WebSocket("ws://192.168.1.105:9901/websocket/"+msg);
+    }
+    else{
+        alert('Not support websocket')
+    }
+
+    //连接发生错误的回调方法
+    websocket.onerror = function(){
+        setMessageInnerHTML("error");
+    };
+
+    //连接成功建立的回调方法
+    websocket.onopen = function(event){
+        setMessageInnerHTML("open");
+    }
+
+    //接收到消息的回调方法
+    websocket.onmessage = function(event){
+        setMessageInnerHTML(event.data);
+        var t = event.data.toString().split("&&")[0];
+        if(t == "close"){
+            closeR();
+        }else if(t == "paths"){
+            var paths  = event.data.toString().split("&&")[1].toString().split('|');
+            ctx.beginPath();
+            ctx.moveTo(paths[0],paths[1]);
+            ctx.lineTo(paths[2],paths[3]);
+            ctx.strokeStyle=linecolor;
+            ctx.lineWidth=linw;
+            ctx.lineCap="round";
+            ctx.stroke();
+        }else if(t == "AJ"){
+            $("#msgs").html("");
+            var data =event.data.toString().split("&&")[1];
+            setMessageInnerHTML(data);
+            $.each(JSON.parse(data),function(n,value) {
+                $("#msgs").append("<h4 >"+value+"</h4>");
+            });
+        }
+
+
+
+
+    }
+
+    //连接关闭的回调方法
+    websocket.onclose = function(){
+        setMessageInnerHTML("close");
+    }
+
+    //监听窗口关闭事件，当窗口关闭时，主动去关闭websocket连接，防止连接还没断开就关闭窗口，server端会抛异常。
+    window.onbeforeunload = function(){
+        websocket.close();
+    }
+
+    //将消息显示在网页上
+    function setMessageInnerHTML(innerHTML){
+        console.log(innerHTML)
+
+    }
+    function closeR(){
+        console.log("closeR");
+        cxt = canvas.getContext('2d'); //2d用单引用括起来
+        ctx.fillStyle="#002200";
+        ctx.fillRect(0,0,600,400);
+    }
+    //关闭连接
+    function closeWebSocket(){
+        websocket.close();
+    }
+
+    //发送消息
+    function send(message){
+        websocket.send(message);
+    }
+
+
+
+    function down(event){
+        onoff=true;
+        oldx=event.pageX-10;
+        oldy=event.pageY-10;
+    }
+    function up(){
+        onoff=false;
+    }
+    function draw(event){
+        if(onoff==true)
+        {
+            var newx=event.pageX-10;
+            var newy=event.pageY-10;
+            ctx.beginPath();
+            ctx.moveTo(oldx,oldy);
+            ctx.lineTo(newx,newy);
+            ctx.strokeStyle=linecolor;
+            ctx.lineWidth=linw;
+            ctx.lineCap="round";
+            ctx.stroke();
+
+            oldx=newx;
+            oldy=newy;
+        }
+    }
+
+    function answer(){
+        var  answer = $("#answer").val();
+        send("answer&&"+answer);
+    }
+</script>
+
+</html>

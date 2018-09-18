@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"  lang="en"
+      xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8" http-equiv="Content-Type" content="text/html;"/>
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+    <link rel="stylesheet" th:href="@{/css/bootstrap-theme.min.css}" />
+    <link rel="stylesheet" th:href="@{/css/index.css}" />
+    <script th:src="@{/js/jquery-3.3.1.min.js}"></script>
+    <script th:src="@{/js/bootstrap.min.js}"></script>
+    <script type="text/javascript" th:inline="javascript">
+
+
+
+    </script>
+
+</head>
+<body  > <!-- th:style="'background:url(' + @{/img/login.jpg} + ');width: 100%;padding-top: 8%;text-align: center;'"-->
+<div class="alert alert-warning alert-dismissible" role="alert" id="wang" style="display: none;text-align: center">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <strong is="type"></strong><h5 id="msg"></h5>
+</div>
+    <div class="row content">
+        <div  class="col-md-4"></div>
+        <div  class="col-md-2 ">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bs-example-modal-sm1">创建房间</button>
+        </div>
+
+        <div class="col-md-2 ">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bs-example-modal-sm2">加入房间</button>
+        </div>
+        <div  class="col-md-4 "></div>
+    </div>
+<div class="modal fade bs-example-modal-sm1" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="gridSystemModalLabel1">创建房间</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="roomNumber2" class="control-label">昵 称:</label>
+                    <input type="text" class="form-control" id="key1">
+                </div>
+                <div class="form-group">
+                    <label for="roomNumber1" class="control-label">房  号:</label>
+                    <input type="text" class="form-control" id="roomNumber1">
+                </div>
+                <div class="form-group">
+                    <label for="roomPwd1" class="control-label">密  码:</label>
+                    <input type="text" class="form-control" id="roomPwd1">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="index.add()">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade bs-example-modal-sm2" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="gridSystemModalLabel2">加入房间</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="roomNumber2" class="control-label">昵 称:</label>
+                    <input type="text" class="form-control" id="key2">
+                </div>
+                <div class="form-group">
+                    <label for="roomNumber2" class="control-label">房  号:</label>
+                    <input type="text" class="form-control" id="roomNumber2">
+                </div>
+                <div class="form-group">
+                    <label for="roomPwd2" class="control-label">密  码:</label>
+                    <input type="text" class="form-control" id="roomPwd2">
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="index.join()">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+<script type="text/javascript">
+    var index = {
+        add:function(){
+            var that = this;
+            $('.modal').modal("hide")
+            this.hideMsg();
+            var key =$("#key1").val();
+            var roomNumber =$("#roomNumber1").val();
+            var roomPwd = $("#roomPwd1").val();
+            console.log(roomNumber+"---------------"+roomPwd);
+            if(!key){
+                this.showMsg("错误~~!","昵称不能为空");
+                return;
+            }
+            if(!roomNumber){
+                this.showMsg("错误~~!","房号不能为空");
+                return;
+            }
+            if(!roomPwd){
+                this.showMsg("错误~~!","密码不能为空");
+                return;
+            }
+            $.ajax({
+                url:"checkRoomNumber",
+                type:"get",
+                dataType:"json",
+                data:{
+                    roomNumber:roomNumber
+                },
+                success:function(response){
+                    if(response.state == 1){
+                        $(window).attr('location','/paint?key='+key+'&roomNumber='+roomNumber+'&roomPwd='+roomPwd);
+                    }else {
+                        that.showMsg("错误~~!",response.msg);
+                        return;
+                    }
+                },
+                error:function() {
+                    that.showMsg("错误~~!","链接错误");
+                }
+            });
+        },
+        join:function(){
+            $('.modal').modal("hide")
+            this.hideMsg();
+            var key =$("#key2").val();
+            var roomNumber =$("#roomNumber2").val();
+            var roomPwd = $("#roomPwd2").val();
+            console.log(roomNumber+"---------------"+roomPwd);
+            if(!key){
+                this.showMsg("错误~~!","昵称不能为空");
+                return;
+            }
+            if(!roomNumber){
+                this.showMsg("错误~~!","房号不能为空");
+                return;
+            }
+            if(!roomPwd){
+                this.showMsg("错误~~!","密码不能为空");
+                return;
+            }
+            $.ajax({
+                url:"checkRoomNumberAndPwd",
+                type:"get",
+                dataType:"json",
+                data:{
+                    roomNumber:roomNumber,
+                    roomPwd:roomPwd
+                },
+                success:function(response){
+                    if(response.state == 1){
+                        $(window).attr('location','/guess?key='+key+'&roomNumber='+roomNumber+'&roomPwd='+roomPwd);
+                    }else {
+                        if(!key){
+                            that.showMsg("错误~~!",response.msg);
+                            return;
+                        }
+                    }
+                },
+                error:function() {
+                    that.showMsg("错误~~!","链接错误");
+                }
+            });
+        },
+        showMsg:function (type,msg) {
+            $("#wang").show();
+            $("#type").html(type);
+            $("#msg").html(msg);
+        },
+        hideMsg:function () {
+            $("#wang").hide();
+        }
+    }
+</script>
+</html>

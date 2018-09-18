@@ -1,0 +1,17 @@
+.canvas{
+    height: 600px;
+    background-color: #2aabd2;
+    text-align: center;
+}
+.canvas canvas{
+    margin: 0 auto;
+}
+.text{
+    height: 600px;
+    background-color: #4cae4c;
+    text-align: center;
+    margin: 0 auto;
+}
+.canvas-content{
+    margin: 20px 0 10px 0 !important;
+}
